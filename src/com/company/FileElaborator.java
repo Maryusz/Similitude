@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class take as argument a Grid file (csv) or a SAP file (txt / cls) and its purpose is to
@@ -12,9 +14,7 @@ import java.util.logging.Logger;
  */
 public class FileElaborator implements IFileElaborator {
 
-    //TODO: Aggiungere LOGGER
     private Logger LOGGER = Logger.getLogger(getClass().getName());
-
     private File file;
     private BufferedReader bufferedReader;
 
@@ -33,7 +33,7 @@ public class FileElaborator implements IFileElaborator {
         // Istantiate the Buffered reader object with encoding passed to InputStreamReader.
         try {
              bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
-             LOGGER.info("Buffered reader instaniated.");
+             LOGGER.info("Buffered reader instanitated.");
         } catch (IOException e) {
             e.printStackTrace();
             LOGGER.log(Level.SEVERE, "IOException inside constructor");
@@ -71,8 +71,22 @@ public class FileElaborator implements IFileElaborator {
 
     }
 
+
     @Override
-    public List<List<String>> retriveDataFromFile() {
-        return null;
+    public List<List<String>> retriveGridData() {
+        LOGGER.info("Retriving polished GRID data...");
+        return bufferedReader.lines()
+                .map(line -> line.replace("\"", ""))
+                .map(line -> polishAndSplit(line, ";"))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<List<String>> retriveSapData() {
+        LOGGER.info("Retriving polished SAP data...");
+        return bufferedReader.lines()
+                .map(line -> polishAndSplit(line, "\t"))
+                .filter(line -> line.size() > 1)
+                .collect(Collectors.toList());
     }
 }

@@ -4,5 +4,6 @@ import java.util.List;
 
 public interface IFileElaborator {
 
-    List<List<String>> retriveDataFromFile();
+    List<List<String>> retriveGridData();
+    List<List<String>> retriveSapData();
 }
