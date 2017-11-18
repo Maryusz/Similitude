@@ -1,12 +1,12 @@
 package com.company;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class take as argument a Grid file (csv) or a SAP file (txt / cls) and its purpose is to
@@ -17,6 +17,7 @@ public class FileElaborator implements IFileElaborator {
     private Logger LOGGER = Logger.getLogger(getClass().getName());
     private File file;
     private BufferedReader bufferedReader;
+    private List<String> readedLines;
 
     /**
      * Receive the path of the file you want to create objects from, and the encoding of the file.
@@ -29,11 +30,21 @@ public class FileElaborator implements IFileElaborator {
 
         // Creates a File object from the path String
         file = new File(path);
+        readedLines = new ArrayList<>();
+        istantiateFile(encoding);
+    }
+
+    private void istantiateFile(String encoding){
 
         // Istantiate the Buffered reader object with encoding passed to InputStreamReader.
         try {
-             bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
-             LOGGER.info("Buffered reader instanitated.");
+            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
+            LOGGER.info("Buffered reader instanitated.");
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                readedLines.add(line);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             LOGGER.log(Level.SEVERE, "IOException inside constructor");
@@ -46,10 +57,9 @@ public class FileElaborator implements IFileElaborator {
      * @throws IOException
      */
     @Deprecated
-    public void TESTprintLines(int number) throws IOException {
-        // TODO: ONLY FOR TESTS
-        for (int i = 0; i< number; i++){
-            System.out.println(polishAndSplit(bufferedReader.readLine(), "\t"));
+    public void TESTprintLines(int number) {
+        for (String s: readedLines){
+            System.out.println(s);
         }
     }
 
@@ -72,21 +82,36 @@ public class FileElaborator implements IFileElaborator {
     }
 
 
+    /**
+     * Creade List<List<String>> of GRID data.
+     * @return list of list of strings.
+     */
     @Override
     public List<List<String>> retriveGridData() {
         LOGGER.info("Retriving polished GRID data...");
-        return bufferedReader.lines()
+        List<List<String>> l = readedLines.stream()
                 .map(line -> line.replace("\"", ""))
                 .map(line -> polishAndSplit(line, ";"))
                 .collect(Collectors.toList());
+
+        return l;
+
     }
 
+    /**
+     * Creade List<List<String>> of SAP data.
+     * @return list of list of strings.
+     */
     @Override
     public List<List<String>> retriveSapData() {
         LOGGER.info("Retriving polished SAP data...");
-        return bufferedReader.lines()
+
+        List<List<String>> l = readedLines.stream()
                 .map(line -> polishAndSplit(line, "\t"))
-                .filter(line -> line.size() > 1)
+                .filter(line -> line.size() > 3)
                 .collect(Collectors.toList());
+
+        return l;
     }
+
 }
