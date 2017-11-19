@@ -1,4 +1,4 @@
-package com.company;
+package com.company.lib;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +17,7 @@ public class HeaderManager {
     public HeaderManager(List<String> headerFromFile) {
         // From the passed header, this stream polish and trim the data of the header.
         this.headerFromFile = headerFromFile.stream()
-                .map(String::toUpperCase)
+                .map(String::toLowerCase)
                 .map(String::trim)
                 .collect(Collectors.toList());
     }
@@ -29,8 +29,8 @@ public class HeaderManager {
      * @return Column index
      */
     public int getPosition(String requiredPosition) {
-        if (headerFromFile.contains(requiredPosition.toUpperCase())){
-            return headerFromFile.indexOf(requiredPosition.toUpperCase());
+        if (headerFromFile.contains(requiredPosition.toLowerCase())){
+            return headerFromFile.indexOf(requiredPosition.toLowerCase());
         } else {
             throw new IllegalArgumentException(String.format("%s doesn't exist in the header", requiredPosition));
         }
@@ -58,7 +58,7 @@ public class HeaderManager {
     public String toString() {
         return "HeaderManager{" +
                 "headerFromFile=" + headerFromFile + ", " +
-                "Size=" + getHeaderSize() +
+                "size=" + getHeaderSize() +
                 '}';
     }
 }

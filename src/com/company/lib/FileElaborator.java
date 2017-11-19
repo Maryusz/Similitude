@@ -1,9 +1,7 @@
-package com.company;
+package com.company.lib;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -16,8 +14,9 @@ public class FileElaborator implements IFileElaborator {
 
     private Logger LOGGER = Logger.getLogger(getClass().getName());
     private File file;
-    private BufferedReader bufferedReader;
     private List<String> readedLines;
+    private HeaderManager mHeaderManager;
+    private List<List<String>> data;
 
     /**
      * Receive the path of the file you want to create objects from, and the encoding of the file.
@@ -38,16 +37,16 @@ public class FileElaborator implements IFileElaborator {
 
         // Istantiate the Buffered reader object with encoding passed to InputStreamReader.
         try {
-            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
-            LOGGER.info("Buffered reader instanitated.");
-            String line = "";
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
+            LOGGER.info("[0] - Buffered reader instantiated.");
+            String line;
             while ((line = bufferedReader.readLine()) != null) {
                 readedLines.add(line);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            LOGGER.log(Level.SEVERE, "IOException inside constructor");
+            LOGGER.log(Level.SEVERE, "[x] - IOException inside constructor");
         }
     }
 
@@ -70,7 +69,6 @@ public class FileElaborator implements IFileElaborator {
      * @return List of string all upper case and trimmed.
      */
     private List<String> polishAndSplit(String line, String separator){
-
         List<String> listFromLine = Arrays.asList(line.split(separator));
 
         listFromLine.stream()
@@ -81,34 +79,62 @@ public class FileElaborator implements IFileElaborator {
 
     }
 
-
     /**
      * Creade List<List<String>> of GRID data.
-     * @return list of list of strings.
      */
     @Override
-    public List<List<String>> retriveGridData() {
+    public void retriveGridData() {
         LOGGER.info("Retriving polished GRID data...");
 
-        return readedLines.stream()
+        data = readedLines.stream()
                 .map(line -> line.replace("\"", ""))
                 .map(line -> polishAndSplit(line, ";"))
                 .collect(Collectors.toList());
+
+        mHeaderManager = new HeaderManager(data.get(0));
 
     }
 
     /**
      * Creade List<List<String>> of SAP data.
-     * @return list of list of strings.
      */
     @Override
-    public List<List<String>> retriveSapData() {
+    public void retriveSapData() {
         LOGGER.info("Retriving polished SAP data...");
 
-        return readedLines.stream()
+        data = readedLines.stream()
                 .map(line -> polishAndSplit(line, "\t"))
                 .filter(line -> line.size() > 3)
                 .collect(Collectors.toList());
+        mHeaderManager = new HeaderManager(data.get(0));
     }
 
+    /**
+     * Creates an instance of header manager, it permits to simpler define lines and indexes of the passed file.
+     * @return HeaderManager object
+     */
+    public HeaderManager getHeader(){
+        return mHeaderManager;
+    }
+
+    /**
+     * Returns the formatted data from the file without header line (0).
+     * @return
+     */
+    public List<List<String>> getData() {
+        data.remove(0);
+        return data;
+    }
+
+    public void printIndexedObject(int position){
+        String format = "%-6s %-30s [%s]%n";
+        System.out.format(format, "Index", "Name", "Value");
+        int count = 0;
+
+        Iterator<String> iterator = getData().get(position).iterator();
+        while (iterator.hasNext()) {
+            System.out.format(format, count, mHeaderManager.getColumnName(count), iterator.next());
+            count++;
+        }
+    }
 }
