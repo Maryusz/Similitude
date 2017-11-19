@@ -9,6 +9,9 @@ import java.util.stream.Collectors;
 /**
  * This class take as argument a Grid file (csv) or a SAP file (txt / cls) and its purpose is to
  * return polished data.
+ *
+ * @version 1.0
+ * @author Mariusz A. Bilda
  */
 public class FileElaborator implements IFileElaborator {
 
