@@ -89,12 +89,11 @@ public class FileElaborator implements IFileElaborator {
     @Override
     public List<List<String>> retriveGridData() {
         LOGGER.info("Retriving polished GRID data...");
-        List<List<String>> l = readedLines.stream()
+
+        return readedLines.stream()
                 .map(line -> line.replace("\"", ""))
                 .map(line -> polishAndSplit(line, ";"))
                 .collect(Collectors.toList());
-
-        return l;
 
     }
 
@@ -106,12 +105,10 @@ public class FileElaborator implements IFileElaborator {
     public List<List<String>> retriveSapData() {
         LOGGER.info("Retriving polished SAP data...");
 
-        List<List<String>> l = readedLines.stream()
+        return readedLines.stream()
                 .map(line -> polishAndSplit(line, "\t"))
                 .filter(line -> line.size() > 3)
                 .collect(Collectors.toList());
-
-        return l;
     }
 
 }
